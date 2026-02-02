@@ -1,0 +1,417 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Open Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #f7f9fb;
+  color: #1f2937;
+}
+
+
+:root{
+  --green:#0c534c;      /* verde principal CGM */
+  --lime:#c5e86c;       /* verde claro CGM */
+  --bg:#f7f9fb;
+  --card:#ffffff;
+  --text:#1f2937;
+  --muted:#6b7280;
+  --border:#e5e7eb;
+  --shadow:0 10px 25px rgba(0,0,0,.06);
+}
+
+
+*{ box-sizing:border-box; margin:0; padding:0; }
+
+
+/* HEADER */
+.header{
+  background: var(--card);
+  border-bottom:1px solid var(--border);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:14px 22px;
+  gap:16px;
+}
+
+.header-left{
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+
+.logo{ height:42px; width:auto; }
+
+.portal-title{
+  display:flex;
+  flex-direction:column;
+  line-height:1.15;
+}
+
+.portal-name{
+  font-weight:800;
+  font-size:16px;
+  color: var(--green);
+}
+
+.portal-sub{
+  font-size:12px;
+  color: var(--muted);
+  margin-top:2px;
+}
+
+.header-right{
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+
+.client-status{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:10px 12px;
+}
+
+.client-info{
+  display:flex;
+  flex-direction:column;
+  line-height:1.1;
+}
+
+.user-label{
+  font-size:11px;
+  color: var(--muted);
+}
+
+.cliente-nombre{
+  font-weight:800;
+  max-width:520px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.user-box{
+  text-align:right;
+}
+
+
+
+.btn{
+  padding:10px 14px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:700;
+}
+.btn {
+  font-family: 'Open Sans';
+  font-weight: 600;
+}
+
+.btn.primary{
+  background: var(--green);
+  color:#fff;
+  border-radius:12px;
+  padding:10px 14px;
+  transition: transform .08s ease, filter .12s ease;
+}
+
+
+.btn.primary:hover{
+  filter: brightness(.95);
+  transform: translateY(-1px);
+}
+
+.btn.logout{
+  background:#eef2f7;
+  color:#111827;
+}
+
+.btn.logout:hover{ filter: brightness(.97); }
+
+/* STATUS */
+.status-bar{
+  padding:12px 22px 0;
+}
+
+.pill{
+  display:inline-block;
+  padding:7px 12px;
+  border-radius:999px;
+  border:1px solid;
+  font-size:13px;
+  font-weight:700;
+}
+
+/* FILTERS */
+.filters{
+  padding:12px 22px 16px;
+  display:grid;
+  grid-template-columns: 1fr 320px;
+  gap:12px;
+}
+
+.filter-item label{
+  display:block;
+  font-size:12px;
+  color: var(--muted);
+  margin:0 0 6px 2px;
+}
+
+.filters input,
+.filters select{
+  width:100%;
+  padding:12px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:#fff;
+  outline:none;
+}
+
+.filters input:focus,
+.filters select:focus{
+  border-color: rgba(15,107,79,.35);
+  box-shadow: 0 0 0 4px rgba(15,107,79,.10);
+}
+
+/* CONTENT */
+.container{
+  padding:0 22px 40px;
+}
+
+.grid-head{
+  display:flex;
+  justify-content:flex-end;
+  padding:6px 0 12px;
+}
+
+.count{
+  font-size:13px;
+  color: var(--muted);
+}
+  .meta,
+  .count {
+    font-weight: 400;
+    color: #6b7280;
+  }
+
+/* GRID */
+.grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap:18px;
+}
+
+/* CARD */
+.eCard{
+  background: var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:16px;
+  box-shadow: var(--shadow);
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  min-height: 210px; /* ayuda a que el botón se alinee abajo */
+}
+
+.eCard {
+  border-top: 4px solid #0c534c;
+}
+
+.eTop{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:10px;
+}
+
+.eEquipo{
+  font-size:18px;
+  font-weight:900;
+  letter-spacing:.2px;
+}
+.eEquipo {
+  color: #0c534c;
+}
+
+.eEquipo {
+  font-weight: 700;
+  color: #0c534c;
+}
+
+.eDesc {
+  font-weight: 600;
+}
+
+.meta{
+  font-size:12px;
+  color: var(--muted);
+  margin-top:2px;
+
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  max-width: 240px;
+}
+
+.badge{
+  background: #c5e86c;          /* verde claro CGM */
+  color: #0c534c;               /* verde oscuro para contraste */
+  border: 1px solid #b2d85a;    /* borde un poco más oscuro */
+  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+
+.eDesc{
+  font-size:14px;
+  font-weight:800;
+  color:#0f172a;
+  text-transform:uppercase;
+  letter-spacing:.2px;
+  line-height:1.2;
+}
+.tag{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid var(--border);
+  background:#f8fafc;
+  font-size:12px;
+  color:#334155;
+  width: fit-content;
+}
+
+.metaRow{
+  font-size:13px;
+  color:#374151;
+}
+
+.rowBtns{
+  margin-top:auto;
+  display:flex;
+  justify-content:flex-end;
+}
+/* Badge JOHN DEERE */
+.badge{
+  background:#c5e86c;
+  color:#0c534c;
+  border:1px solid #b2d85a;
+  font-size:12px;
+  padding:5px 10px;
+  border-radius:999px;
+  font-weight:900;
+  white-space:nowrap;
+}
+
+/* DENY */
+.deny-box{
+  background:#fef2f2;
+  border:1px solid #fecaca;
+  color:#991b1b;
+  padding:14px;
+  border-radius:12px;
+  margin:14px 0;
+  font-weight:800;
+}
+
+/* MODAL */
+.modal-back{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.45);
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+}
+
+.modal{
+  background:#fff;
+  border-radius:16px;
+  width:100%;
+  max-width:520px;
+  box-shadow: 0 20px 50px rgba(0,0,0,.25);
+  border:1px solid rgba(255,255,255,.2);
+}
+
+.modal-head{
+  padding:16px 18px;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+}
+
+.modal-head h3{
+  font-size:18px;
+  font-weight:900;
+  margin:0;
+}
+
+.icon-btn{
+  border:none;
+  background:#eef2f7;
+  width:36px;
+  height:36px;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:900;
+}
+
+.icon-btn:hover{ filter: brightness(.96); }
+
+.modal-body{
+  padding:16px 18px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  color:#374151;
+}
+
+.modal-actions{
+  padding:16px 18px;
+  border-top:1px solid var(--border);
+  display:flex;
+  justify-content:flex-end;
+}
+
+/* RESPONSIVE */
+@media (max-width: 860px){
+  .filters{
+    grid-template-columns: 1fr;
+  }
+  .header{
+    flex-direction:column;
+    align-items:stretch;
+  }
+  .header-right{
+    justify-content:space-between;
+  }
+  .user-box{
+    text-align:left;
+  }
+}
+  .header {
+    border-bottom: 3px solid #0c534c;
+  }
+  .portal-name {
+    font-weight: 700;
+  }
+
+  .portal-sub {
+    font-weight: 400;
+  }

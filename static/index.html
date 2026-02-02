@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Portal de Equipos · CGM Rental</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+ <!-- Fuente EXACTA del header (Open Sans) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+
+  <!-- Favicons CGM -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/img/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/static/img/favicon/favicon-16x16.png">
+  <link rel="apple-touch-icon" href="/static/img/favicon/apple-touch-icon.png">
+  <link rel="manifest" href="/static/img/favicon/site.webmanifest">
+  <link rel="shortcut icon" href="/static/img/favicon/favicon.ico">
+
+  <link rel="stylesheet" href="/static/css/styles.css" />
+</head>
+
+<body>
+
+  <!-- HEADER -->
+<header class="header">
+  <div class="header-left">
+    <img src="/static/img/cgm.png" alt="CGM Rental" class="logo" />
+    <div class="portal-title">
+      <div class="portal-name">Portal de Equipos</div>
+      <div class="portal-sub">Consulta de máquinas asignadas</div>
+    </div>
+  </div>
+
+  <div class="header-right">
+    <div class="client-status">
+      <div class="client-info">
+        <div class="user-label">Cliente</div>
+        <div id="clienteNombre" class="cliente-nombre"></div>
+      </div>
+
+      <!-- STATUS pegado al cliente -->
+      <span id="statusPill" class="pill"></span>
+    </div>
+
+    <button id="btnLogout" class="btn logout">Cerrar sesión</button>
+  </div>
+</header>
+
+
+  <!-- FILTROS -->
+  <section class="filters">
+    <div class="filter-item">
+      <label for="search">Buscar</label>
+      <input type="text" id="search" placeholder="Buscar equipo o descripción..." />
+    </div>
+
+    <div class="filter-item">
+      <label for="fProyecto">Proyecto</label>
+      <select id="fProyecto"></select>
+    </div>
+  </section>
+
+  <!-- CONTENIDO -->
+  <main class="container">
+    <div id="denyBox" class="deny-box" style="display:none">
+      Acceso no disponible
+    </div>
+
+    <div class="grid-head">
+      <div id="countEquipos" class="count"></div>
+    </div>
+
+    <div id="cardsGrid" class="grid"></div>
+  </main>
+
+  <!-- MODAL -->
+  <div id="modalBack" class="modal-back">
+    <div class="modal">
+      <div class="modal-head">
+        <h3 id="mEquipo"></h3>
+        <button id="mClose" class="icon-btn" aria-label="Cerrar">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <p><strong>Proyecto:</strong> <span id="mProyecto"></span></p>
+        <p><strong>Descripción:</strong> <span id="mDesc"></span></p>
+        <p><strong>Fabricante:</strong> <span id="mFab"></span></p>
+        <p><strong>País:</strong> <span id="mPais"></span></p>
+      </div>
+
+      <div class="modal-actions">
+        <button id="mOk" class="btn primary">Aceptar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
