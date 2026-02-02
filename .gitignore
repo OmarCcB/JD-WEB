@@ -1,15 +1,22 @@
 # Python
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.py[cod]
 *.log
 
-# Entornos
+# Virtual environments
 venv/
-.env
+.venv/
+env/
+ENV/
 
-# OS / editor
-.DS_Store
+# Environment variables (NUNCA subir)
+.env
+.envrc
+
+# VS Code / IDEs
 .vscode/
 .idea/
+
+# OS
+.DS_Store
+Thumbs.db
