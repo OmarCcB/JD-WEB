@@ -12,6 +12,11 @@ from app.db import get_conn
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+@app.get("/")
+def root():
+    return RedirectResponse(url="/portal", status_code=302)
+
+
 def _deny(resp: JSONResponse) -> JSONResponse:
     resp.delete_cookie(COOKIE_NAME, path="/", samesite="lax")
     return resp
