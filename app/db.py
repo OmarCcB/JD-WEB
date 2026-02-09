@@ -1,6 +1,6 @@
 import pyodbc
 from app.settings import ODBC_DRIVER, SQL_SERVER, SQL_DATABASE, SQL_USER, SQL_PASSWORD
-
+#mod
 def get_conn():
     if not all([SQL_SERVER, SQL_DATABASE, SQL_USER, SQL_PASSWORD]):
         raise RuntimeError("Faltan variables SQL_* en .env")
