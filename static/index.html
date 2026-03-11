@@ -2,100 +2,543 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Portal de Equipos · CGM Rental</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
- <!-- Fuente EXACTA del header (Open Sans) -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-
-  <!-- Favicons CGM -->
+  <title>Portal de Equipos · CGM Rental</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" sizes="32x32" href="/static/img/favicon/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/static/img/favicon/favicon-16x16.png">
-  <link rel="apple-touch-icon" href="/static/img/favicon/apple-touch-icon.png">
-  <link rel="manifest" href="/static/img/favicon/site.webmanifest">
   <link rel="shortcut icon" href="/static/img/favicon/favicon.ico">
-
   <link rel="stylesheet" href="/static/css/styles.css" />
+  <!-- jsPDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 </head>
-
 <body>
 
-  <!-- HEADER -->
-<header class="header">
-  <div class="header-left">
-    <img src="/static/img/cgm.png" alt="CGM Rental" class="logo" />
-    <div class="portal-title">
-      <div class="portal-name">Portal de Equipos</div>
-      <div class="portal-sub">Consulta de máquinas asignadas</div>
-    </div>
+<!-- ╔══════════════════════════════════════╗
+     ║   VISTA: AUTH                       ║
+     ╚══════════════════════════════════════╝ -->
+<div id="viewAuth" class="view view-auth">
+  <div class="auth-bg">
+    <div class="auth-bg-shape"></div>
+    <div class="auth-bg-shape s2"></div>
   </div>
-
-  <div class="header-right">
-    <div class="client-status">
-      <div class="client-info">
-        <div class="user-label">Cliente</div>
-        <div id="clienteNombre" class="cliente-nombre"></div>
+  <div class="auth-container">
+    <aside class="auth-aside">
+      <div class="aside-inner">
+        <img src="/static/img/cgm.png" alt="CGM Rental" class="aside-logo" />
+        <h1 class="aside-title">Portal de<br/><em>Equipos</em></h1>
+        <p class="aside-desc">Consulta en tiempo real el estado de tu flota John Deere.</p>
+        <div class="aside-badges">
+          <span class="chip"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="6" width="10" height="7" rx="1.5" stroke="rgba(197,232,108,0.8)" stroke-width="1.2" fill="none"/><path d="M4 6V4.5a3 3 0 016 0V6" stroke="rgba(197,232,108,0.8)" stroke-width="1.2" stroke-linecap="round" fill="none"/><circle cx="7" cy="9.5" r="1" fill="rgba(197,232,108,0.8)"/></svg> Acceso seguro</span>
+          <span class="chip"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M8 1L3 8h4.5L6 13l5-7H7L8 1z" stroke="rgba(197,232,108,0.8)" stroke-width="1.2" stroke-linejoin="round" fill="rgba(197,232,108,0.15)"/></svg> Tiempo real</span>
+          <span class="chip"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1C4.79 1 3 2.79 3 5c0 3 4 8 4 8s4-5 4-8c0-2.21-1.79-4-4-4z" stroke="rgba(197,232,108,0.8)" stroke-width="1.2" fill="rgba(197,232,108,0.15)"/><circle cx="7" cy="5" r="1.2" fill="rgba(197,232,108,0.8)"/></svg> Geolocalización</span>
+        </div>
       </div>
+      <div class="aside-footer">CGM · Sistema Protegido</div>
+    </aside>
+    <main class="auth-panel">
+      <!-- PASO 1: Email -->
+      <div id="stepEmail" class="auth-step active">
+        <div class="step-header">
+          <div class="step-num">01</div>
+          <div>
+            <h2 class="step-title">Ingresar al sistema</h2>
+            <p class="step-sub">Te enviaremos un código de acceso único a tu correo.</p>
+          </div>
+        </div>
+        <form id="formEmail" novalidate>
+          <div class="field">
+            <label for="inputEmail">Correo electrónico</label>
+            <input id="inputEmail" type="email" placeholder="usuario@empresa.com" autocomplete="email" required />
+          </div>
+          <p id="errorEmail" class="field-error" style="display:none;"></p>
+          <button id="btnSolicitarPin" class="btn primary" type="submit">
+            <span class="btn-label">Enviar código</span>
+            <span class="btn-icon">→</span>
+          </button>
+        </form>
+      </div>
+      <!-- PASO 2: PIN -->
+      <div id="stepPin" class="auth-step" style="display:none;">
+        <div class="step-header">
+          <button id="btnVolverEmail" class="back-btn">← Volver</button>
+          <div class="step-num">02</div>
+          <div>
+            <h2 class="step-title">Código de acceso</h2>
+            <p class="step-sub">Revisa tu bandeja de entrada.</p>
+          </div>
+        </div>
+        <div class="email-confirm">
+          <span class="email-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="1.5" y="3.5" width="15" height="11" rx="2" stroke="#0c534c" stroke-width="1.3"/><path d="M1.5 6l7.5 5 7.5-5" stroke="#0c534c" stroke-width="1.3" stroke-linecap="round"/></svg></span>
+          <span id="pinEmailLabel" class="email-label"></span>
+        </div>
+        <form id="formPin" novalidate>
+          <div class="field">
+            <label for="inputPin">Ingresa el código de 6 dígitos</label>
+            <div class="pin-inputs" id="pinInputs">
+              <input type="text" inputmode="numeric" maxlength="1" class="pin-digit" data-index="0" />
+              <input type="text" inputmode="numeric" maxlength="1" class="pin-digit" data-index="1" />
+              <input type="text" inputmode="numeric" maxlength="1" class="pin-digit" data-index="2" />
+              <span class="pin-sep">·</span>
+              <input type="text" inputmode="numeric" maxlength="1" class="pin-digit" data-index="3" />
+              <input type="text" inputmode="numeric" maxlength="1" class="pin-digit" data-index="4" />
+              <input type="text" inputmode="numeric" maxlength="1" class="pin-digit" data-index="5" />
+            </div>
+            <input id="inputPin" type="hidden" />
+          </div>
+          <p id="errorPin" class="field-error" style="display:none;"></p>
+          <div class="pin-meta">
+            <p id="pinTimer" class="pin-timer"></p>
+            <button id="btnReenviarPin" type="button" class="link-btn">↻ Reenviar código</button>
+          </div>
+          <button id="btnVerificarPin" class="btn primary" type="submit">
+            <span class="btn-label">Verificar acceso</span>
+            <span class="btn-icon">→</span>
+          </button>
+        </form>
+      </div>
+    </main>
+  </div>
+</div>
 
-      <!-- STATUS pegado al cliente -->
+
+<!-- ╔══════════════════════════════════════╗
+     ║   VISTA: PORTAL                     ║
+     ╚══════════════════════════════════════╝ -->
+<div id="viewPortal" class="view" style="display:none;">
+
+  <header class="header">
+    <div class="header-left">
+      <img src="/static/img/cgm.png" alt="CGM Rental" class="header-logo" />
+      <div class="header-divider"></div>
+      <div class="header-info">
+        <span class="header-label">Cliente</span>
+        <span id="clienteNombre" class="header-cliente"></span>
+      </div>
+    </div>
+    <div class="header-right">
       <span id="statusPill" class="pill"></span>
+      <button id="btnLogout" class="btn ghost">Cerrar sesión</button>
     </div>
+  </header>
 
-    <button id="btnLogout" class="btn logout">Cerrar sesión</button>
+  <div class="portal-body">
+
+    <!-- Sidebar filtros -->
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <label class="sidebar-label">Buscar equipo</label>
+        <div class="search-wrap">
+          <span class="search-icon"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="6" cy="6" r="4" stroke="rgba(255,255,255,0.5)" stroke-width="1.3"/><path d="M9.5 9.5L13 13" stroke="rgba(255,255,255,0.5)" stroke-width="1.3" stroke-linecap="round"/></svg></span>
+          <input id="search" type="text" placeholder="Código o descripción..." class="search-input" />
+        </div>
+      </div>
+
+      <!-- Filtro cliente — solo admins (JS lo activa) -->
+      <div class="sidebar-section" id="sectionFCliente" style="display:none;">
+        <label class="sidebar-label">Cliente</label>
+        <select id="fCliente" class="select-field"></select>
+        <button id="btnVerComoCliente" class="btn-ver-como" style="display:none;">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="5" r="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M1 10c0-2.2 2.5-4 5.5-4s5.5 1.8 5.5 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          Ver como este cliente
+        </button>
+      </div>
+
+      <div class="sidebar-section">
+        <label class="sidebar-label">Proyecto</label>
+        <select id="fProyecto" class="select-field"></select>
+      </div>
+
+      <div class="sidebar-count">
+        <span id="countEquipos" class="count-text"></span>
+      </div>
+
+      <!-- BOTÓN REPORTE DEL MES -->
+      <div class="sidebar-section sidebar-reporte">
+        <button id="btnReporteMes" class="btn-reporte">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <rect x="1" y="2" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/>
+            <path d="M4 6h8M4 9h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            <path d="M11 11l1.5 1.5L15 10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Reporte del Mes
+        </button>
+      </div>
+    </aside>
+
+    <!-- Grid equipos -->
+    <main class="portal-main">
+      <div id="cardsGrid" class="cards-grid"></div>
+    </main>
+
   </div>
-</header>
+</div>
 
 
-  <!-- FILTROS -->
-  <section class="filters">
-    <div class="filter-item">
-      <label for="search">Buscar</label>
-      <input type="text" id="search" placeholder="Buscar equipo o descripción..." />
-    </div>
+<!-- ╔══════════════════════════════════════╗
+     ║   VISTA: DENEGADO                   ║
+     ╚══════════════════════════════════════╝ -->
+<div id="viewDenied" class="view" style="display:none;">
+  <div class="denied-wrap">
+    <img src="/static/img/cgm.png" alt="CGM Rental" class="denied-logo" />
+    <div class="denied-icon">⊘</div>
+    <h2 class="denied-title">Acceso no disponible</h2>
+    <p class="denied-desc">Tu cuenta no tiene acceso activo al portal. Si crees que esto es un error, contacta a CGM.</p>
+    <button class="btn outline" onclick="showView('auth')">← Volver al inicio</button>
+  </div>
+</div>
 
-    <div class="filter-item">
-      <label for="fProyecto">Proyecto</label>
-      <select id="fProyecto"></select>
-    </div>
-  </section>
 
-  <!-- CONTENIDO -->
-  <main class="container">
-    <div id="denyBox" class="deny-box" style="display:none">
-      Acceso no disponible
-    </div>
-
-    <div class="grid-head">
-      <div id="countEquipos" class="count"></div>
-    </div>
-
-    <div id="cardsGrid" class="grid"></div>
-  </main>
-
-  <!-- MODAL -->
-  <div id="modalBack" class="modal-back">
-    <div class="modal">
-      <div class="modal-head">
-        <h3 id="mEquipo"></h3>
-        <button id="mClose" class="icon-btn" aria-label="Cerrar">✕</button>
+<!-- ╔══════════════════════════════════════════════════════════╗
+     ║   MODAL: DETALLE EQUIPO (info básica)                  ║
+     ╚══════════════════════════════════════════════════════════╝ -->
+<div id="modalBack" class="modal-back">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-equipo-wrap">
+        <span class="modal-label-small">Equipo</span>
+        <h3 id="mEquipo" class="modal-equipo"></h3>
       </div>
-
-      <div class="modal-body">
-        <p><strong>Proyecto:</strong> <span id="mProyecto"></span></p>
-        <p><strong>Descripción:</strong> <span id="mDesc"></span></p>
-        <p><strong>Fabricante:</strong> <span id="mFab"></span></p>
-        <p><strong>País:</strong> <span id="mPais"></span></p>
+      <button id="mClose" class="icon-btn">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-field">
+        <span class="modal-field-label">Proyecto</span>
+        <span id="mProyecto" class="modal-field-val"></span>
       </div>
-
-      <div class="modal-actions">
-        <button id="mOk" class="btn primary">Aceptar</button>
+      <div class="modal-field">
+        <span class="modal-field-label">Descripción</span>
+        <span id="mDesc" class="modal-field-val"></span>
       </div>
+      <div class="modal-field">
+        <span class="modal-field-label">Fabricante</span>
+        <span id="mFab" class="modal-field-val"></span>
+      </div>
+      <div class="modal-field">
+        <span class="modal-field-label">País de fabricación</span>
+        <span id="mPais" class="modal-field-val"></span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button id="mVerTelemetria" class="btn outline" style="margin-right:8px;">
+        Ver telemetría →
+      </button>
+      <button id="mOk" class="btn primary">Cerrar</button>
     </div>
   </div>
+</div>
 
-  <script src="/static/js/app.js"></script>
+
+<!-- ╔══════════════════════════════════════════════════════════╗
+     ║   MODAL: TELEMETRÍA (modal grande — 3 pestañas)        ║
+     ╚══════════════════════════════════════════════════════════╝ -->
+<div id="modalTelBack" class="modal-back">
+  <div class="modal modal-tel">
+
+    <!-- Cabecera -->
+    <div class="modal-head">
+      <div class="modal-equipo-wrap">
+        <span class="modal-label-small">Telemetría</span>
+        <h3 id="tEquipo" class="modal-equipo"></h3>
+        <span id="tProyecto" class="modal-tel-sub"></span>
+      </div>
+      <div class="modal-head-actions">
+        <span id="tEngineState" class="engine-badge"></span>
+        <button id="tClose" class="icon-btn">✕</button>
+      </div>
+    </div>
+
+    <!-- Pestañas -->
+    <div class="tel-tabs">
+      <button class="tel-tab active" data-tab="realtime">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.3"/><path d="M7 4v3.5l2 1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        Tiempo real
+      </button>
+      <button class="tel-tab" data-tab="monthly">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="3" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M4 1v3M10 1v3M1 7h12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        Este mes
+      </button>
+      <button class="tel-tab" data-tab="history">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 11V5l3-3h5l2 2v7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 2v3H2M4 8h6M4 10h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        Historial
+      </button>
+    </div>
+
+    <!-- ── PESTAÑA 1: TIEMPO REAL ─────────────────────────── -->
+    <div class="modal-tel-body tab-panel active" id="tabRealtime">
+      <div id="tLoading" class="tel-loading">
+        <div class="tel-spinner"></div><span>Cargando telemetría...</span>
+      </div>
+      <div id="tNoData" class="tel-nodata" style="display:none;">
+        <div class="tel-nodata-icon">📡</div>
+        <p>Este equipo no tiene datos de telemetría disponibles.</p>
+        <span>No cuenta con dispositivo telemático o aún no se ha sincronizado.</span>
+      </div>
+      <div id="tData" style="display:none;">
+        <div class="tel-meta-bar">
+          <span id="tPeriodo" class="tel-meta-item"></span>
+          <span id="tSync" class="tel-meta-item"></span>
+          <span id="tHorometro" class="tel-meta-item tel-horometro"></span>
+        </div>
+        <div class="tel-kpis">
+          <div class="tel-kpi">
+            <div class="tel-kpi-label">Horas ON</div>
+            <div id="tHorasOn" class="tel-kpi-val"></div>
+            <div id="tHorasOff" class="tel-kpi-sub"></div>
+          </div>
+          <div class="tel-kpi tel-kpi-green">
+            <div class="tel-kpi-label">Utilización</div>
+            <div id="tPctUtil" class="tel-kpi-val"></div>
+            <div class="tel-kpi-sub">del tiempo encendido</div>
+          </div>
+          <div class="tel-kpi tel-kpi-amber">
+            <div class="tel-kpi-label">Ralentí</div>
+            <div id="tPctRalenti" class="tel-kpi-val"></div>
+            <div class="tel-kpi-sub">tiempo en espera</div>
+          </div>
+          <div class="tel-kpi tel-kpi-blue">
+            <div class="tel-kpi-label">Trabajo efectivo</div>
+            <div id="tPctTrabajo" class="tel-kpi-val"></div>
+            <div class="tel-kpi-sub">carga Low/Med/High</div>
+          </div>
+        </div>
+        <div class="tel-section">
+          <div class="tel-section-title">Desglose del motor</div>
+          <div class="tel-bar-wrap">
+            <div id="tBarIdle"  class="tel-bar-seg tel-bar-amber"></div>
+            <div id="tBarLow"   class="tel-bar-seg tel-bar-blue-light"></div>
+            <div id="tBarMed"   class="tel-bar-seg tel-bar-blue"></div>
+            <div id="tBarHigh"  class="tel-bar-seg tel-bar-green"></div>
+            <div id="tBarKeyOn" class="tel-bar-seg tel-bar-muted"></div>
+          </div>
+          <div class="tel-bar-legend">
+            <span class="tel-legend-item"><span class="dot dot-amber"></span>Ralentí <strong id="lIdle"></strong></span>
+            <span class="tel-legend-item"><span class="dot dot-blue-light"></span>Carga baja <strong id="lLow"></strong></span>
+            <span class="tel-legend-item"><span class="dot dot-blue"></span>Carga media <strong id="lMed"></strong></span>
+            <span class="tel-legend-item"><span class="dot dot-green"></span>Carga alta <strong id="lHigh"></strong></span>
+          </div>
+        </div>
+        <div class="tel-section" id="tGpsSection">
+          <div class="tel-section-title">Última ubicación conocida</div>
+          <div class="tel-gps-row">
+            <div class="tel-gps-coords">
+              <span id="tGpsCoords" class="tel-gps-val"></span>
+              <span id="tGpsFecha" class="tel-gps-fecha"></span>
+            </div>
+            <a id="tGpsLink" href="#" target="_blank" class="btn-gps">Ver en mapa →</a>
+          </div>
+        </div>
+        <div class="tel-section" id="tFuelSection">
+          <div class="tel-section-title">Combustible</div>
+          <div class="tel-fuel-row">
+            <div class="tel-fuel-kpi">
+              <div class="tel-fuel-label">Tanque actual</div>
+              <div id="tFuelPct" class="tel-fuel-val">—</div>
+              <div class="tel-fuel-bar-wrap"><div id="tFuelBar" class="tel-fuel-bar"></div></div>
+            </div>
+            <div class="tel-fuel-kpi">
+              <div class="tel-fuel-label">Consumido este mes</div>
+              <div id="tFuelMes" class="tel-fuel-val">—</div>
+            </div>
+            <div class="tel-fuel-kpi">
+              <div class="tel-fuel-label">Promedio L/hora</div>
+              <div id="tFuelLxH" class="tel-fuel-val">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PESTAÑA 2: ESTE MES ────────────────────────────── -->
+    <div class="modal-tel-body tab-panel" id="tabMonthly" style="display:none;">
+      <div id="mLoading" class="tel-loading">
+        <div class="tel-spinner"></div><span>Cargando datos del mes...</span>
+      </div>
+      <div id="mData" style="display:none;">
+
+        <!-- KPIs del mes -->
+        <div class="tel-kpis" id="mKpis"></div>
+
+        <!-- Gráfico barras por día -->
+        <div class="tel-section">
+          <div class="tel-section-title">Horas trabajadas por día</div>
+          <div id="mBarChart" class="day-chart"></div>
+        </div>
+
+        <!-- Sesiones del día seleccionado -->
+        <div class="tel-section" id="mSesionesSection">
+          <div class="tel-section-title-row">
+            <div class="tel-section-title">Sesiones del <span id="mDiaLabel">—</span></div>
+            <span id="mSesionesCount" class="tel-meta-item"></span>
+          </div>
+          <div id="mSesionesLoading" class="tel-hist-loading" style="display:none;">
+            <div class="tel-spinner small"></div><span>Cargando sesiones...</span>
+          </div>
+          <div id="mSesionesList" class="sesiones-list"></div>
+          <div id="mSesionesEmpty" class="tel-hist-nodata" style="display:none;">
+            Sin sesiones registradas para este día.
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── PESTAÑA 3: HISTORIAL ───────────────────────────── -->
+    <div class="modal-tel-body tab-panel" id="tabHistory" style="display:none;">
+      <div id="hLoading" class="tel-loading">
+        <div class="tel-spinner"></div><span>Cargando historial...</span>
+      </div>
+      <div id="hData" style="display:none;">
+
+        <!-- Tendencia eficiencia -->
+        <div id="hTendencia" class="tendencia-banner" style="display:none;"></div>
+
+        <!-- Tabs por mes -->
+        <div class="tel-section-title-row" style="margin-bottom:10px;">
+          <div class="tel-section-title">Comparativa mensual</div>
+          <div class="tel-hist-tabs" id="hMesTabs"></div>
+        </div>
+
+        <!-- KPIs mes seleccionado -->
+        <div class="tel-kpis" id="hMesKpis"></div>
+
+        <!-- Barra desglose -->
+        <div class="tel-section" style="margin-top:8px;">
+          <div class="tel-bar-wrap" id="hBarDesglose"></div>
+          <div class="tel-bar-legend" id="hBarLegend"></div>
+        </div>
+
+        <!-- Comparativo visual meses -->
+        <div class="tel-section">
+          <div class="tel-section-title">Horas motor — comparativo</div>
+          <div class="tel-comparativo" id="hComparativo"></div>
+        </div>
+
+        <!-- Tendencia L/h -->
+        <div class="tel-section" id="hFuelSection">
+          <div class="tel-section-title">Eficiencia combustible (L/hora por mes)</div>
+          <div id="hFuelChart" class="fuel-trend-chart"></div>
+        </div>
+
+      </div>
+      <div id="hNoData" class="tel-nodata" style="display:none;">
+        <div class="tel-nodata-icon">📊</div>
+        <p>Sin historial mensual disponible aún.</p>
+        <span>Los datos se acumularán con cada sync horario.</span>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button id="tClose2" class="btn primary">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ╔══════════════════════════════════════════════════════════╗
+     ║   MODAL: REPORTE FLOTA (desde sidebar)                 ║
+     ╚══════════════════════════════════════════════════════════╝ -->
+<div id="modalFlotaBack" class="modal-back">
+  <div class="modal modal-flota">
+
+    <div class="modal-head">
+      <div class="modal-equipo-wrap">
+        <span class="modal-label-small">Flota completa</span>
+        <h3 class="modal-equipo">Reporte del Mes</h3>
+        <span id="fPeriodo" class="modal-tel-sub"></span>
+      </div>
+      <button id="fClose" class="icon-btn">✕</button>
+    </div>
+
+    <!-- KPIs globales flota -->
+    <div class="flota-kpis-bar" id="fKpis">
+      <div class="flota-kpi">
+        <div class="flota-kpi-label">Total horas ON</div>
+        <div id="fTotalOn" class="flota-kpi-val">—</div>
+      </div>
+      <div class="flota-kpi">
+        <div class="flota-kpi-label">Utilización promedio</div>
+        <div id="fPctUtil" class="flota-kpi-val">—</div>
+      </div>
+      <div class="flota-kpi">
+        <div class="flota-kpi-label">Más utilizada</div>
+        <div id="fMasUtil" class="flota-kpi-val flota-kpi-equipo">—</div>
+      </div>
+      <div class="flota-kpi">
+        <div class="flota-kpi-label">Mayor ralentí</div>
+        <div id="fMasRalenti" class="flota-kpi-val flota-kpi-equipo">—</div>
+      </div>
+    </div>
+
+    <!-- Filtros descarga PDF -->
+    <div class="pdf-bar">
+      <div class="pdf-bar-filters">
+        <div class="pdf-filter-group">
+          <label class="pdf-filter-label">Informe por</label>
+          <select id="pdfTipo" class="pdf-select">
+            <option value="general">General — toda la flota</option>
+            <option value="cliente">Por cliente</option>
+            <option value="proyecto">Por proyecto</option>
+          </select>
+        </div>
+        <div class="pdf-filter-group" id="pdfGrupoSub" style="display:none;">
+          <label class="pdf-filter-label" id="pdfSubLabel">Seleccionar</label>
+          <select id="pdfSubVal" class="pdf-select"></select>
+        </div>
+      </div>
+      <button id="btnDescargarPDF" class="btn-pdf">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+          <path d="M7.5 1v9M4 7l3.5 3.5L11 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M1 12h13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        Descargar PDF
+      </button>
+    </div>
+
+    <!-- Tabla flota -->
+    <div class="modal-tel-body flota-body">
+      <div id="fLoading" class="tel-loading">
+        <div class="tel-spinner"></div>
+        <span>Cargando reporte...</span>
+      </div>
+      <div id="fData" style="display:none;">
+        <table class="flota-table">
+          <thead>
+            <tr>
+              <th>Equipo</th>
+              <th>Descripción</th>
+              <th>Horas ON</th>
+              <th>% Utiliz.</th>
+              <th>% Ralentí</th>
+              <th>Horómetro</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="fTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button id="fClose2" class="btn primary">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Barra modo preview cliente —— solo visible en modo simulación -->
+<div id="previewBar" style="display:none;">
+  <div class="preview-bar-inner">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="6.5" r="3" stroke="currentColor" stroke-width="1.4"/><path d="M1 13c0-3 3-5 7-5s7 2 7 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+    <span>Vista previa como: <strong id="previewNombre">—</strong></span>
+    <span class="preview-sep">·</span>
+    <span class="preview-hint">Estás simulando exactamente lo que ve este cliente</span>
+    <button id="btnSalirPreview" class="btn-salir-preview">✕ Salir de vista previa</button>
+  </div>
+</div>
+
+<script src="/static/js/app.js"></script>
 </body>
 </html>

@@ -11,6 +11,6 @@ def get_conn():
         f"DATABASE={SQL_DATABASE};"
         f"UID={SQL_USER};"
         f"PWD={SQL_PASSWORD};"
-        "Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;"
+        "Encrypt=yes;TrustServerCertificate=yes;Connection Timeout=30;"
     )
     return conn
