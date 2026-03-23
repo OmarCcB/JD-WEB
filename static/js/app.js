@@ -286,6 +286,60 @@ function renderProyectoFilter() {
     proyectos.map(d => `<option value="${d}">${d || "(Sin proyecto)"}</option>`).join("");
 }
 
+/* ══════════════════════════════════════════════
+   IMAGEN DE EQUIPO
+══════════════════════════════════════════════ */
+const EQUIPO_FOLDER_MAP = {
+  "BULLDOZER":        "BULLDOZER",
+  "CARGADOR FRONTAL": "CARGADOR FRONTAL",
+  "EXCAVADORA":       "EXCAVADORA",
+  "MINICARGADORES":   "MINICARGADORES",
+  "MOTONIVELADORA":   "MOTONIVELADORA",
+  "RETROEXCAVADORA":  "RETOEXCAVADORA",
+  "TRACTOR AGRICOLA": "TRACTOR AGRICOLA",
+};
+
+function getEquipoImgSrc(descripcion, modelo) {
+  const desc   = (descripcion || "").trim().toUpperCase();
+  const mod    = (modelo || "").trim().toUpperCase();
+  const folder = EQUIPO_FOLDER_MAP[desc] || desc;
+  if (!mod || !folder) return null;
+  return `/static/img/${encodeURIComponent(folder)}/${encodeURIComponent(desc + " " + mod)}.webp`;
+}
+
+/** Fallback para TRACTOR AGRICOLA: intenta con tilde (AGRÍCOLA) */
+function getEquipoImgFallback(descripcion, modelo) {
+  const desc = (descripcion || "").trim().toUpperCase();
+  const mod  = (modelo || "").trim().toUpperCase();
+  if (!desc.includes("TRACTOR AGRICOLA") || !mod) return null;
+  const descAcc = "TRACTOR AGR\u00CDCOLA"; // AGRÍCOLA con tilde
+  return `/static/img/${encodeURIComponent("TRACTOR AGRICOLA")}/${encodeURIComponent(descAcc + " " + mod)}.webp`;
+}
+
+const FALLBACK_IMG = "/static/img/Sin_Imagen.png";
+
+function _imgOnerror(fallback) {
+  return fallback
+    ? `this.onerror=function(){this.src='${FALLBACK_IMG}';this.onerror=null};this.src='${fallback}'`
+    : `this.src='${FALLBACK_IMG}';this.onerror=null`;
+}
+
+function buildImgTag(descripcion, modelo) {
+  const src      = getEquipoImgSrc(descripcion, modelo) || FALLBACK_IMG;
+  const fallback = getEquipoImgFallback(descripcion, modelo);
+  return `<div class="eCardImg"><img src="${src}" alt="${descripcion} ${modelo}" loading="lazy" onerror="${_imgOnerror(fallback)}"></div>`;
+}
+
+function setModalImg(imgEl, descripcion, modelo) {
+  if (!imgEl) return;
+  const src      = getEquipoImgSrc(descripcion, modelo) || FALLBACK_IMG;
+  const fallback = getEquipoImgFallback(descripcion, modelo);
+  imgEl.src     = src;
+  imgEl.onerror = fallback
+    ? function(){ this.onerror = function(){ this.src = FALLBACK_IMG; this.onerror = null; }; this.src = fallback; }
+    : function(){ this.src = FALLBACK_IMG; this.onerror = null; };
+}
+
 function applyFilters() {
   const q    = (el("search")?.value || "").toLowerCase();
   // En modo preview, forzar filtro al cliente simulado
@@ -305,12 +359,13 @@ function applyFilters() {
   }
   grid.innerHTML = items.map(x => `
     <article class="eCard">
+      ${buildImgTag(x.descripcion, x.modelo)}
       <div class="eCardHead">
         <div class="eEquipo">${x.equipo ?? ""}</div>
         <span class="badge">${x.fabricante ?? ""}</span>
       </div>
       <div class="eMeta">${(x.descripcion_proyecto ?? "")}</div>
-      <div class="eDesc">${x.descripcion ?? ""}</div>
+      <div class="eDesc">${x.descripcion ?? ""}${x.modelo ? ` <span class="eModelo">${x.modelo}</span>` : ""}</div>
       <div class="metaRow">
         <span class="tag">${x.pais ?? "—"}</span>
       </div>
@@ -339,6 +394,7 @@ function openModal(item) {
   el("mDesc").textContent     = item.descripcion ?? "—";
   el("mFab").textContent      = item.fabricante ?? "—";
   el("mPais").textContent     = item.pais ?? "—";
+  setModalImg(el("mImg"), item.descripcion, item.modelo);
   el("modalBack").style.display = "flex";
 }
 
@@ -372,7 +428,7 @@ function switchTab(tabName) {
   if (tabName === "history" && currentTelEquipo) cargarMensual(currentTelEquipo);
 }
 
-async function openTelemetria(equipo, descripcion, proyecto) {
+async function openTelemetria(equipo, descripcion, proyecto, modelo) {
   el("modalBack").style.display = "none";
   currentTelEquipo = equipo;
 
@@ -385,8 +441,12 @@ async function openTelemetria(equipo, descripcion, proyecto) {
 
   el("tEquipo").textContent   = equipo;
   el("tProyecto").textContent = proyecto || "";
+  // Mostrar descripcion + modelo debajo del código de equipo
+  const tDesc = el("tDesc");
+  if (tDesc) tDesc.textContent = descripcion ? (modelo ? `${descripcion} · ${modelo}` : descripcion) : "";
   el("tEngineState").textContent = "";
   el("tEngineState").className   = "engine-badge";
+  setModalImg(el("tImg"), descripcion, modelo);
 
   el("modalTelBack").style.display = "flex";
 
@@ -419,7 +479,7 @@ function renderTelemetria(d) {
   el("tHorasOff").textContent  = d.horas_off !== null ? `${d.horas_off.toFixed(1)}h apagado` : "";
   el("tPctUtil").textContent   = d.pct_utilizacion !== null ? `${d.pct_utilizacion.toFixed(1)}%` : "—";
   el("tPctRalenti").textContent  = d.pct_ralenti !== null ? `${d.pct_ralenti.toFixed(1)}%` : "—";
-  el("tPctTrabajo").textContent  = d.pct_trabajo_efectivo !== null ? `${d.pct_trabajo_efectivo.toFixed(1)}%` : "—";
+
 
   const idle = d.horas_ralenti || 0, low = d.horas_carga_baja || 0;
   const med  = d.horas_carga_media || 0, high = d.horas_carga_alta || 0;
@@ -431,10 +491,11 @@ function renderTelemetria(d) {
   el("tBarMed").style.width   = pct(med);
   el("tBarHigh").style.width  = pct(high);
   el("tBarKeyOn").style.width = pct(keyOn);
-  el("lIdle").textContent = `${idle.toFixed(1)}h`;
-  el("lLow").textContent  = `${low.toFixed(1)}h`;
-  el("lMed").textContent  = `${med.toFixed(1)}h`;
-  el("lHigh").textContent = `${high.toFixed(1)}h`;
+  el("lIdle").textContent  = `${idle.toFixed(1)}h`;
+  el("lLow").textContent   = `${low.toFixed(1)}h`;
+  el("lMed").textContent   = `${med.toFixed(1)}h`;
+  el("lHigh").textContent  = `${high.toFixed(1)}h`;
+  el("lKeyOn").textContent = keyOn > 0 ? `${keyOn.toFixed(1)}h` : "";
 
   const gpsSection = el("tGpsSection");
   if (d.gps_lat && d.gps_lon) {
@@ -1314,7 +1375,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       openTelemetria(
         currentModalEquipo.equipo,
         currentModalEquipo.descripcion,
-        currentModalEquipo.descripcion_proyecto
+        currentModalEquipo.descripcion_proyecto,
+        currentModalEquipo.modelo
       );
     }
   });

@@ -184,7 +184,8 @@ def api_equipos(request: Request):
                EC.DESCRIPCION_PAIS_FABRICACION,
                EC.CODIGO_PROYECTO, EC.DESCRIPCION_PROYECTO,
                EC.CODIGO_CLIENTE,
-               ISNULL(C.DESCRIPCION_CLIENTE, EC.CODIGO_CLIENTE) AS DESCRIPCION_CLIENTE
+               ISNULL(C.DESCRIPCION_CLIENTE, EC.CODIGO_CLIENTE) AS DESCRIPCION_CLIENTE,
+               EC.MODELO
         FROM dbo.WEB_JD_EQUIPO_CLIENTE EC
         LEFT JOIN dbo.WEB_JD_CLIENTES C
                ON C.CODIGO_CLIENTE = EC.CODIGO_CLIENTE
@@ -202,6 +203,7 @@ def api_equipos(request: Request):
                 "descripcion_proyecto": r[5],
                 "codigo_cliente":       r[6],
                 "descripcion_cliente":  r[7],
+                "modelo":               r[8],
             }
             for r in rows
         ]
@@ -210,7 +212,7 @@ def api_equipos(request: Request):
     # Normal: solo sus equipos
     sql = """
     SELECT EQUIPO, DESCRIPCION, FABRICANTE_EQUIPO, DESCRIPCION_PAIS_FABRICACION,
-           CODIGO_PROYECTO, DESCRIPCION_PROYECTO
+           CODIGO_PROYECTO, DESCRIPCION_PROYECTO, MODELO
     FROM dbo.WEB_JD_EQUIPO_CLIENTE
     WHERE CODIGO_CLIENTE = ?
     ORDER BY EQUIPO
@@ -226,6 +228,7 @@ def api_equipos(request: Request):
             "pais":                 r[3],
             "codigo_proyecto":      r[4],
             "descripcion_proyecto": r[5],
+            "modelo":               r[6],
         }
         for r in rows
     ]

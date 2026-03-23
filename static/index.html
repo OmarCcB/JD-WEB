@@ -205,6 +205,9 @@
       <button id="mClose" class="icon-btn">✕</button>
     </div>
     <div class="modal-body">
+      <div class="modal-img-wrap">
+        <img id="mImg" src="" alt="" />
+      </div>
       <div class="modal-field">
         <span class="modal-field-label">Proyecto</span>
         <span id="mProyecto" class="modal-field-val"></span>
@@ -243,6 +246,7 @@
       <div class="modal-equipo-wrap">
         <span class="modal-label-small">Telemetría</span>
         <h3 id="tEquipo" class="modal-equipo"></h3>
+        <span id="tDesc" class="modal-tel-desc"></span>
         <span id="tProyecto" class="modal-tel-sub"></span>
       </div>
       <div class="modal-head-actions">
@@ -265,6 +269,11 @@
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 11V5l3-3h5l2 2v7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 2v3H2M4 8h6M4 10h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
         Historial
       </button>
+    </div>
+
+    <!-- Imagen del equipo — visible bajo las pestañas -->
+    <div class="tel-img-banner">
+      <img id="tImg" src="" alt="" />
     </div>
 
     <!-- ── PESTAÑA 1: TIEMPO REAL ─────────────────────────── -->
@@ -299,11 +308,7 @@
             <div id="tPctRalenti" class="tel-kpi-val"></div>
             <div class="tel-kpi-sub">tiempo en espera</div>
           </div>
-          <div class="tel-kpi tel-kpi-blue">
-            <div class="tel-kpi-label">Trabajo efectivo</div>
-            <div id="tPctTrabajo" class="tel-kpi-val"></div>
-            <div class="tel-kpi-sub">carga Low/Med/High</div>
-          </div>
+
         </div>
         <div class="tel-section">
           <div class="tel-section-title">Desglose del motor</div>
@@ -319,6 +324,7 @@
             <span class="tel-legend-item"><span class="dot dot-blue-light"></span>Carga baja <strong id="lLow"></strong></span>
             <span class="tel-legend-item"><span class="dot dot-blue"></span>Carga media <strong id="lMed"></strong></span>
             <span class="tel-legend-item"><span class="dot dot-green"></span>Carga alta <strong id="lHigh"></strong></span>
+            <span class="tel-legend-item"><span class="dot dot-muted"></span>Llave conectada <strong id="lKeyOn"></strong></span>
           </div>
         </div>
         <div class="tel-section" id="tGpsSection">
