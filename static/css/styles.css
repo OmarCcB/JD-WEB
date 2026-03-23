@@ -720,6 +720,45 @@ body {
   overflow-y: auto;
 }
 
+/* Header de portal-main con toggle de vista */
+.portal-main-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+
+/* ── Toggle cuadrícula / analítica ─────────── */
+.view-toggle-wrap {
+  display: flex;
+  gap: 3px;
+  background: var(--bg-warm);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 3px;
+}
+.view-btn {
+  border: none;
+  background: transparent;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: .15s ease;
+  white-space: nowrap;
+}
+.view-btn.active {
+  background: white;
+  color: var(--green);
+  box-shadow: 0 1px 4px rgba(0,0,0,.09);
+}
+.view-btn:hover:not(.active) { color: var(--text); }
+
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -2147,4 +2186,142 @@ body {
 /* Cuando preview está activo — empujar layout hacia abajo */
 body.preview-activo .portal-layout {
   padding-top: 38px;
+}
+
+/* ══════════════════════════════════════════════
+   VISTA ANALÍTICA DE FLOTA
+══════════════════════════════════════════════ */
+
+/* Header: periodo + leyenda */
+.va-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0 14px 0;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.va-periodo {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-mid);
+  text-transform: uppercase;
+  letter-spacing: .4px;
+}
+.va-leyenda {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.va-leyenda span {
+  font-size: 11px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.va-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* Contenedor de filas */
+#vaRows {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* Fila individual */
+.va-row {
+  display: grid;
+  grid-template-columns: 190px 1fr 110px;
+  align-items: center;
+  gap: 14px;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--border-light);
+  cursor: pointer;
+  transition: background .12s ease;
+}
+.va-row:hover { background: var(--bg-warm); }
+.va-row:last-child { border-bottom: none; }
+.va-row.va-nodata { opacity: .45; cursor: default; }
+
+/* Columna izquierda: código + descripción */
+.va-equipo {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.va-equipo-top {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.va-cod {
+  font-family: 'Oswald', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--green);
+  white-space: nowrap;
+}
+.va-desc {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Barra apilada */
+.va-bar-wrap {
+  display: flex;
+  height: 20px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--border-light);
+  cursor: help;
+}
+.va-bar-seg {
+  height: 100%;
+  transition: width .45s ease;
+  min-width: 0;
+}
+
+/* Columna derecha: horas + % */
+.va-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+.va-hon {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+}
+.va-pct {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.va-stats-nodata {
+  font-size: 12px;
+  color: var(--muted);
+  font-style: italic;
+  white-space: nowrap;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .va-row { grid-template-columns: 130px 1fr; }
+  .va-stats { display: none; }
+  .portal-main-header { margin-bottom: 12px; }
+  .view-btn span { display: none; }
 }

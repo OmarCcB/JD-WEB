@@ -171,7 +171,55 @@
 
     <!-- Grid equipos -->
     <main class="portal-main">
+
+      <!-- Toggle vista grid / analítica -->
+      <div class="portal-main-header">
+        <div class="view-toggle-wrap">
+          <button id="btnVistaGrid" class="view-btn active" title="Vista cuadrícula">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <rect x="1" y="1" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"/>
+              <rect x="9" y="1" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"/>
+              <rect x="1" y="9" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"/>
+              <rect x="9" y="9" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"/>
+            </svg>
+            Cuadrícula
+          </button>
+          <button id="btnVistaAnalitica" class="view-btn" title="Vista analítica de flota">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <rect x="1" y="4" width="5" height="2.5" rx="1" fill="currentColor"/>
+              <rect x="1" y="8" width="9" height="2.5" rx="1" fill="currentColor"/>
+              <rect x="1" y="12" width="7" height="2.5" rx="1" fill="currentColor"/>
+              <rect x="7" y="4" width="8" height="2.5" rx="1" fill="currentColor" opacity=".35"/>
+              <rect x="11" y="8" width="4" height="2.5" rx="1" fill="currentColor" opacity=".35"/>
+              <rect x="9" y="12" width="6" height="2.5" rx="1" fill="currentColor" opacity=".35"/>
+            </svg>
+            Analítica
+          </button>
+        </div>
+      </div>
+
+      <!-- Vista cuadrícula (default) -->
       <div id="cardsGrid" class="cards-grid"></div>
+
+      <!-- Vista analítica de flota -->
+      <div id="vistaAnalitica" style="display:none;">
+        <div id="vaLoading" class="tel-loading" style="display:none;">
+          <div class="tel-spinner"></div>
+          <span>Cargando telemetría...</span>
+        </div>
+        <div id="vaHeader" class="va-header" style="display:none;">
+          <span id="vaPeriodo" class="va-periodo"></span>
+          <div class="va-leyenda">
+            <span><span class="va-dot" style="background:#d1d5db;"></span>OFF</span>
+            <span><span class="va-dot" style="background:#f59e0b;"></span>Ralentí</span>
+            <span><span class="va-dot" style="background:#93c5fd;"></span>Carga baja</span>
+            <span><span class="va-dot" style="background:#3b82f6;"></span>Carga media</span>
+            <span><span class="va-dot" style="background:#22c55e;"></span>Carga alta</span>
+          </div>
+        </div>
+        <div id="vaRows"></div>
+      </div>
+
     </main>
 
   </div>

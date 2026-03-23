@@ -12,6 +12,7 @@ let pinExpiraSeg = 600;
 let currentEmail = "";
 let isAdmin      = false;  // true cuando sesión admin
 let previewCliente = null; // { codigo, nombre } cuando admin simula cliente
+let vistaActual  = "grid"; // "grid" | "analitica"
 
 /* ══════════════════════════════════════════════
    VISTAS
@@ -316,7 +317,7 @@ function getEquipoImgFallback(descripcion, modelo) {
   return `/static/img/${encodeURIComponent("TRACTOR AGRICOLA")}/${encodeURIComponent(descAcc + " " + mod)}.webp`;
 }
 
-const FALLBACK_IMG = "/static/img/Sin_Imagen.png";
+const FALLBACK_IMG = "/static/img/Sin_Imagen.webp";
 
 function _imgOnerror(fallback) {
   return fallback
@@ -340,18 +341,23 @@ function setModalImg(imgEl, descripcion, modelo) {
     : function(){ this.src = FALLBACK_IMG; this.onerror = null; };
 }
 
-function applyFilters() {
+function filtrarEquipos() {
   const q    = (el("search")?.value || "").toLowerCase();
-  // En modo preview, forzar filtro al cliente simulado
   const cli  = previewCliente ? previewCliente.codigo : (el("fCliente")?.value || "");
   const proj = el("fProyecto")?.value || "";
-  const items = equipos.filter(x => {
+  return equipos.filter(x => {
     const matchQ = (x.equipo || "").toLowerCase().includes(q) || (x.descripcion || "").toLowerCase().includes(q);
     const matchC = !cli  || ((x.codigo_cliente || "").trim() === cli);
     const matchP = !proj || ((x.descripcion_proyecto || "").trim() === proj);
     return matchQ && matchC && matchP;
   });
+}
+
+function applyFilters() {
+  const items = filtrarEquipos();
   animateCount(items.length);
+  // Si la vista analítica está activa, actualizar esas filas también
+  if (vistaActual === "analitica") { renderVistaAnalitica(items); return; }
   const grid = el("cardsGrid");
   if (items.length === 0) {
     grid.innerHTML = `<div class="deny-box">No se encontraron equipos con ese criterio.</div>`;
@@ -1405,6 +1411,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Botón PDF
   el("btnDescargarPDF")?.addEventListener("click", descargarPDF);
 
+  // Toggle vista grid / analítica
+  el("btnVistaGrid")?.addEventListener("click",      () => setVista("grid"));
+  el("btnVistaAnalitica")?.addEventListener("click", () => setVista("analitica"));
+
   // Filtros sidebar
   el("search")?.addEventListener("input", applyFilters);
   el("fCliente")?.addEventListener("change", () => {
@@ -1433,4 +1443,135 @@ document.addEventListener("DOMContentLoaded", async () => {
   el("btnSalirPreview")?.addEventListener("click", salirModoPreview);
 
   setInterval(ping, 10 * 60 * 1000);
+
 });
+
+/* ══════════════════════════════════════════════
+   VISTA ANALÍTICA DE FLOTA
+══════════════════════════════════════════════ */
+
+/** Alterna entre vista cuadrícula y vista analítica */
+function setVista(modo) {
+  vistaActual = modo;
+  const esGrid = (modo === "grid");
+
+  el("cardsGrid").style.display        = esGrid ? "" : "none";
+  el("vistaAnalitica").style.display   = esGrid ? "none" : "";
+  el("btnVistaGrid")?.classList.toggle("active",      esGrid);
+  el("btnVistaAnalitica")?.classList.toggle("active", !esGrid);
+
+  if (!esGrid) cargarVistaAnalitica();
+}
+
+/** Carga telemetría (usa caché si existe) y lanza el render */
+async function cargarVistaAnalitica() {
+  if (!telemetriaCache) {
+    el("vaLoading").style.display = "flex";
+    el("vaHeader").style.display  = "none";
+    el("vaRows").innerHTML        = "";
+
+    const { data } = await api("/api/telemetria");
+    el("vaLoading").style.display = "none";
+    if (!data?.ok) return;
+    telemetriaCache = data;
+  }
+  renderVistaAnalitica(filtrarEquipos());
+}
+
+/** Renderiza las filas de barras apiladas para la vista analítica */
+function renderVistaAnalitica(items) {
+  const hdr = el("vaHeader");
+  const rows = el("vaRows");
+  if (!hdr || !rows) return;
+
+  // Periodo
+  const hoy   = new Date();
+  const mes   = hoy.toLocaleString("es-PE", { month: "long" });
+  const anio  = hoy.getFullYear();
+  el("vaPeriodo").textContent = `Análisis de flota · ${mes.charAt(0).toUpperCase() + mes.slice(1)} ${anio}`;
+  hdr.style.display = "block";
+
+  const telItems = telemetriaCache?.items || [];
+
+  rows.innerHTML = items.map(item => {
+    const tel = telItems.find(t => t.equipo === item.equipo);
+
+    // Sin datos de telemetría
+    if (!tel || !tel.sync_ok || tel.horas_on === null) {
+      return `
+        <div class="va-row va-nodata">
+          <div class="va-equipo">
+            <div class="va-equipo-top">
+              <span class="ft-state-off"></span>
+              <span class="va-cod">${item.equipo}</span>
+            </div>
+            <span class="va-desc">${item.descripcion ?? ""}${item.modelo ? " · " + item.modelo : ""}</span>
+          </div>
+          <div class="va-bar-wrap">
+            <div class="va-bar-seg" style="width:100%;background:#e5e7eb;"></div>
+          </div>
+          <div class="va-stats">
+            <span class="va-stats-nodata">Sin datos</span>
+          </div>
+        </div>`;
+    }
+
+    // Desglose de horas
+    const off   = tel.horas_off          ?? 0;
+    const ral   = tel.horas_ralenti      ?? 0;
+    const baja  = tel.horas_carga_baja   ?? 0;
+    const media = tel.horas_carga_media  ?? 0;
+    const alta  = tel.horas_carga_alta   ?? 0;
+    const total = (off + ral + baja + media + alta) || 1;
+
+    const pOff   = (off   / total * 100).toFixed(2);
+    const pRal   = (ral   / total * 100).toFixed(2);
+    const pBaja  = (baja  / total * 100).toFixed(2);
+    const pMedia = (media / total * 100).toFixed(2);
+    const pAlta  = (alta  / total * 100).toFixed(2);
+
+    const tooltip = `OFF: ${off.toFixed(1)}h · Ralentí: ${ral.toFixed(1)}h · Carga baja: ${baja.toFixed(1)}h · Carga media: ${media.toFixed(1)}h · Carga alta: ${alta.toFixed(1)}h`;
+    const badge   = tel.engine_state === 1
+      ? `<span class="ft-state-on"></span>`
+      : `<span class="ft-state-off"></span>`;
+    const pctUtil = tel.pct_utilizacion != null ? tel.pct_utilizacion.toFixed(1) + "%" : "—";
+
+    return `
+      <div class="va-row"
+           data-equipo="${item.equipo}"
+           data-desc="${item.descripcion ?? ""}"
+           data-proy="${item.descripcion_proyecto ?? ""}"
+           data-modelo="${item.modelo ?? ""}">
+        <div class="va-equipo">
+          <div class="va-equipo-top">
+            ${badge}
+            <span class="va-cod">${item.equipo}</span>
+          </div>
+          <span class="va-desc">${item.descripcion ?? ""}${item.modelo ? " · " + item.modelo : ""}</span>
+        </div>
+        <div class="va-bar-wrap" title="${tooltip}">
+          ${parseFloat(pOff)  > 0 ? `<div class="va-bar-seg" style="width:${pOff}%;background:#d1d5db;"></div>`  : ""}
+          ${parseFloat(pRal)  > 0 ? `<div class="va-bar-seg" style="width:${pRal}%;background:#f59e0b;"></div>`  : ""}
+          ${parseFloat(pBaja) > 0 ? `<div class="va-bar-seg" style="width:${pBaja}%;background:#93c5fd;"></div>` : ""}
+          ${parseFloat(pMedia)> 0 ? `<div class="va-bar-seg" style="width:${pMedia}%;background:#3b82f6;"></div>`: ""}
+          ${parseFloat(pAlta) > 0 ? `<div class="va-bar-seg" style="width:${pAlta}%;background:#22c55e;"></div>` : ""}
+        </div>
+        <div class="va-stats">
+          <span class="va-hon">${tel.horas_on.toFixed(1)}h ON</span>
+          <span class="va-pct">${pctUtil} util.</span>
+        </div>
+      </div>`;
+  }).join("");
+
+  // Click en fila → abrir telemetría individual
+  rows.querySelectorAll(".va-row[data-equipo]").forEach(row => {
+    row.addEventListener("click", () => {
+      openTelemetria(
+        row.dataset.equipo,
+        row.dataset.desc,
+        row.dataset.proy,
+        row.dataset.modelo || undefined
+      );
+    });
+  });
+}
